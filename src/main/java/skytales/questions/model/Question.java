@@ -2,7 +2,7 @@ package skytales.questions.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import skytales.auth.User;
+import skytales.auth.model.User;
 
 @Builder
 @Getter

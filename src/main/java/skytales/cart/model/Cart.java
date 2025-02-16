@@ -3,7 +3,7 @@ package skytales.cart.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import skytales.auth.User;
+import skytales.auth.model.User;
 import skytales.library.model.Book;
 
 import java.util.Set;

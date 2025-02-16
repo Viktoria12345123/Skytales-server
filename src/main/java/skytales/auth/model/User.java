@@ -1,4 +1,4 @@
-package skytales.auth;
+package skytales.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +49,6 @@ public class User {
     @OneToMany( mappedBy = "creator", fetch = FetchType.EAGER)
     private List<Book> books;
 
-    @OneToMany(mappedBy = "owner",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "author",fetch = FetchType.EAGER)
     private List<Question> questions;
 }

@@ -1,12 +1,12 @@
-package skytales.auth;
+package skytales.auth.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -28,38 +28,42 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(UserDetails userDetails, String userId, String role, String email) {
+    public String generateToken( String userId, String role, String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
         claims.put("email", email);
-        return generateToken(claims, userDetails);
+        return generateToken(claims);
     }
 
-
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+    public String generateToken(Map<String, Object> extraClaim) {
+        return buildToken(extraClaim, jwtExpiration);
     }
-
 
     private String buildToken(
             Map<String, Object> extraClaims,
-            UserDetails userDetails,
             long expiration
     ) {
-        return Jwts
+        String token = Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(extraClaims.get("email").toString())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
+
+        System.out.println("Generated JWT Token: " + token);
+        return token;
     }
 
 
     public boolean isTokenValid(String token) {
-        return !isTokenExpired(token);
+        try {
+            return !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {
@@ -88,11 +92,9 @@ public class JwtService {
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
-
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
-
 
     public String extractEmail(String token) {
         return extractClaim(token, claims -> claims.get("email", String.class));
@@ -102,4 +104,5 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 }

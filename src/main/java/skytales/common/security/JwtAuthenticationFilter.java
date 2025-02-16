@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import skytales.auth.JwtService;
+import skytales.auth.service.JwtService;
 
 import java.io.IOException;
 
@@ -38,7 +38,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
             String email = jwtService.extractEmail(token);
-
 
             request.setAttribute("userId", userId);
             request.setAttribute("username", username);
