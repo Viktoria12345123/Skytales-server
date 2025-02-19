@@ -8,6 +8,7 @@ import skytales.auth.dto.SessionResponse;
 @Service
 public class SessionService {
     public SessionResponse getSessionData(HttpServletRequest request) {
+
         String userId = (String) request.getAttribute("userId");
         String username = (String) request.getAttribute("username");
         String email = (String) request.getAttribute("email");

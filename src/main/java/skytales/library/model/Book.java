@@ -30,10 +30,10 @@ public class Book {
     @Column(nullable = false)
     private String author;
 
-    @Column(name = "banner_image_url")
+    @Column(name = "banner_image_url", length = 1000)
     private String bannerImageUrl;
 
-    @Column(name = "cover_image_url")
+    @Column(name = "cover_image_url", length = 1000)
     private String coverImageUrl;
 
     @Column(nullable = false)
@@ -42,14 +42,13 @@ public class Book {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(length = 10000)
+    @Column( columnDefinition = "TEXT")
     private String description;
+
+    @Column(nullable = false)
+    public int quantity;
 
     @ManyToOne
     private User creator;
-
-    @ManyToMany(mappedBy = "books")
-    private List<Cart> carts;
-
 
 }

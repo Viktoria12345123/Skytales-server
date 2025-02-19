@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import skytales.auth.model.User;
 
+import java.util.UUID;
+
 @Builder
 @Getter
 @Setter
@@ -13,21 +15,20 @@ import skytales.auth.model.User;
 public class Question {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String text;
 
     private String answer;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status = "pending";
+    private Status status;
 
-    @ManyToOne
-    private User author;
+    private UUID author;
 
-    @ManyToOne
-    private User admin;
+    private UUID admin;
 
 }

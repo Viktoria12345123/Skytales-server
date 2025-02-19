@@ -26,5 +26,8 @@ public record BookData(
 
         @NotNull(message = "Price is mandatory") String price,
 
+        @NotNull(message = "Quantity is mandatory") String quantity,
+
         @Size(max = 10000, message = "Description cannot exceed 10000 characters") String description
-) {}
+) {
+}

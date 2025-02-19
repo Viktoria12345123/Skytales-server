@@ -6,6 +6,7 @@ import lombok.*;
 import skytales.auth.model.User;
 import skytales.library.model.Book;
 
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -21,8 +22,11 @@ public class Cart {
     private Long id;
 
     @ManyToMany
-    @JoinTable(name = "cart_books", joinColumns = @JoinColumn(name = "cart_id"), inverseJoinColumns = @JoinColumn(name = "book_id"))
-    private Set<Book> books;
+    @JoinTable(
+            name = "cart_books",
+            joinColumns = @JoinColumn(name = "cart_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_reference_id"))
+    private Set<BookItemReference> books;
 
     @OneToOne
     @JoinColumn(name = "owner_id")

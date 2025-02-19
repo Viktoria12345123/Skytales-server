@@ -39,19 +39,8 @@ public class AuthController {
         }
 
         User user = userService.register(registerRequest, passwordEncoder);
+        RegisterResponse registerResponse = userService.generateRegisterResponse(user);
 
-        String jwtToken = jwtService.generateToken(
-                user.getId().toString(),
-                user.getRole().name(),
-                user.getEmail()
-        );
-
-        RegisterResponse registerResponse = new RegisterResponse(
-                user.getEmail(),
-                user.getId().toString(),
-                user.getRole().name(),
-                jwtToken
-        );
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
     }
 
@@ -63,15 +52,7 @@ public class AuthController {
         }
 
         User user = userService.login(loginRequest);
-
-        String jwtToken = jwtService.generateToken(user.getId().toString(), user.getRole().name(), user.getEmail());
-
-        LoginResponse loginResponse = new LoginResponse(
-                user.getEmail(),
-                user.getId().toString(),
-                user.getRole().name(),
-                jwtToken
-        );
+        LoginResponse loginResponse = userService.generateLoginResponse(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(loginResponse);
     }
@@ -88,5 +69,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
 }

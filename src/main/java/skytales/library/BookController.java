@@ -4,22 +4,18 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import skytales.library.dto.BookData;
 import skytales.library.service.BookService;
 import skytales.library.model.Book;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,25 +32,15 @@ public class BookController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getBooks() {
-
+    public ResponseEntity<List<Book>> getBooks() {
         List<Book> books = bookService.getAllBooks();
-        return new ResponseEntity<>(books, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createBook(@RequestBody @Valid BookData data, BindingResult bindingResult, HttpSession session) {
-
+    public ResponseEntity<Book> createBook(@RequestBody @Valid BookData data, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-
-            Map<String, String> errors = new HashMap<>();
-            bindingResult.getAllErrors().forEach(error -> {
-                String fieldName = ((FieldError) error).getField();
-                String message = error.getDefaultMessage();
-                errors.put(fieldName, message);
-            });
-
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         Book book = bookService.createBook(data);
@@ -62,36 +48,39 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    public List<Book> searchBooks(@RequestParam String query) throws IOException {
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam String query) {
+        try {
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index("library")
+                    .query(q -> q
+                            .multiMatch(m -> m
+                                    .query(query)
+                                    .fields("title^3", "author^2", "description")
+                                    .fuzziness("AUTO")
+                            ))
+            );
 
-        SearchRequest searchRequest = SearchRequest.of(s -> s
-                .index("library")
-                .query(q -> q
-                        .multiMatch(m -> m
-                                .query(query)
-                                .fields("title^3", "author^2", "description")
-                                .fuzziness("AUTO")
-                        ))
-        );
+            SearchResponse<Book> searchResponse = elasticsearchClient.search(searchRequest, Book.class);
 
-        SearchResponse<Book> searchResponse = elasticsearchClient.search(searchRequest, Book.class);
+            List<Book> books = searchResponse.hits().hits().stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
 
-        return searchResponse.hits().hits().stream()
-                .map(Hit::source)
-                .collect(Collectors.toList());
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // Handle exception
+        }
     }
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<Object> getBook(@PathVariable String bookId) {
+    public ResponseEntity<Book> getBook(@PathVariable String bookId) {
+        Book book = bookService.getBookById(UUID.fromString(bookId));
 
-       Book book = bookService.getBookById(UUID.fromString(bookId));
+        if (book == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
-       if( book == null ) {
-           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-       }
-
-       return new ResponseEntity<>(book, HttpStatus.OK);
+        return new ResponseEntity<>(book, HttpStatus.OK);
     }
-
-
 }
+

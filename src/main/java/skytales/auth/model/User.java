@@ -49,6 +49,4 @@ public class User {
     @OneToMany( mappedBy = "creator", fetch = FetchType.EAGER)
     private List<Book> books;
 
-    @OneToMany(mappedBy = "author",fetch = FetchType.EAGER)
-    private List<Question> questions;
 }
