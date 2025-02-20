@@ -3,9 +3,8 @@ package skytales.cart.events;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import skytales.cart.dto.BookRequest;
-import skytales.cart.dto.MessageRequest;
 import skytales.cart.service.BookReferenceService;
-import skytales.common.kafka.state_engine.model.Message;
+import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
 @Service
 public class KafkaUpdate {
@@ -17,37 +16,16 @@ public class KafkaUpdate {
     }
 
     @KafkaListener(topics = "book-new", groupId = "book-sync")
-    public void handleNewBook(Message message) {
+    public void handleNewBook(KafkaMessage<?> message) {
 
-        BookRequest bookRequest = new BookRequest(
-                message.getBook().id(),
-                message.getBook().title(),
-                message.getBook().author(),
-                message.getBook().genre(),
-                message.getBook().coverImageUrl(),
-                message.getBook().year(),
-                message.getBook().price(),
-                message.getBook().quantity()
-        );
-
-
+        BookRequest bookRequest = (BookRequest) message.getData();
         bookReferenceService.addBookToState(bookRequest);
     }
 
     @KafkaListener(topics = "book-remove", groupId = "book-sync")
-    public void handleRemoveBook(Message message) {
+    public void handleRemoveBook(KafkaMessage<BookRequest> message) {
 
-        BookRequest bookRequest = new BookRequest(
-                message.getBook().id(),
-                message.getBook().title(),
-                message.getBook().author(),
-                message.getBook().genre(),
-                message.getBook().coverImageUrl(),
-                message.getBook().year(),
-                message.getBook().price(),
-                message.getBook().quantity()
-        );
-
+        BookRequest bookRequest = (BookRequest) message.getData();
         bookReferenceService.removeBookFromState(bookRequest);
     }
 

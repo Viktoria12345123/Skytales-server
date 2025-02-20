@@ -1,16 +1,16 @@
 package skytales.auth.service;
 
 
-import org.springframework.jdbc.object.UpdatableSqlQuery;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import skytales.auth.dto.LoginResponse;
-import skytales.auth.dto.RegisterResponse;
+import skytales.auth.dto.*;
+import skytales.auth.events.UserCreatedEvent;
 import skytales.auth.model.Role;
 import skytales.auth.model.User;
 import skytales.auth.repository.UserRepository;
-import skytales.auth.dto.LoginRequest;
-import skytales.auth.dto.RegisterRequest;
+import skytales.common.kafka.state_engine.UpdateProducer;
+import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
 import java.util.UUID;
 
@@ -19,11 +19,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate;
+    private final UpdateProducer updateProducer;
 
-    public UserService(UserRepository userRepository, JwtService jwtService) {
+    public UserService(UserRepository userRepository, JwtService jwtService, KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate, UpdateProducer updateProducer) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.kafkaTemplate = kafkaTemplate;
+        this.updateProducer = updateProducer;
     }
+
 
     public User getById(UUID id) {
         return userRepository.findById(id).orElse(null);
@@ -51,6 +56,7 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
+        updateProducer.sendCreateCartRequest(user.getId().toString());
 
         return user;
 
@@ -108,4 +114,11 @@ public class UserService {
         );
     }
 
+    public void setCartToUser(String cartId, String userId) {
+
+        User user = getById(UUID.fromString(userId));
+        user.setCartId(UUID.fromString(cartId));
+        userRepository.save(user);
+
+    }
 }

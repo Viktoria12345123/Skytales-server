@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import skytales.auth.dto.*;
 import skytales.auth.model.User;
 import skytales.auth.service.JwtService;
-import skytales.auth.service.SessionService;
+import skytales.common.security.SessionService;
 import skytales.auth.service.UserService;
 
 @RestController

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import skytales.auth.dto.SessionResponse;
-import skytales.auth.service.SessionService;
+import skytales.common.security.SessionService;
 import skytales.questions.dto.AnswerRequest;
 import skytales.questions.dto.PostQuestionRequest;
 import skytales.questions.model.Question;

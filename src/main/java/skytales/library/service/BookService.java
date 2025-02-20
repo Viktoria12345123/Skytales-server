@@ -1,7 +1,7 @@
 package skytales.library.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import skytales.common.kafka.state_engine.BookUpdateProducer;
+import skytales.common.kafka.state_engine.UpdateProducer;
 import skytales.common.kafka.state_engine.model.UpdateType;
 import skytales.library.dto.BookData;
 import skytales.library.elasticsearch.service.ElasticSearchService;
@@ -17,13 +17,13 @@ public class BookService {
 
    private final BookRepository bookRepository;
     private final ElasticSearchService elasticSearchService;
-    private final BookUpdateProducer bookUpdateProducer;
+    private final UpdateProducer updateProducer;
 
     @Autowired
-    public BookService(BookRepository bookRepository, ElasticSearchService elasticSearchService, BookUpdateProducer bookUpdateProducer) {
+    public BookService(BookRepository bookRepository, ElasticSearchService elasticSearchService, UpdateProducer updateProducer) {
         this.bookRepository = bookRepository;
         this.elasticSearchService = elasticSearchService;
-        this.bookUpdateProducer = bookUpdateProducer;
+        this.updateProducer = updateProducer;
     }
 
     public List<Book> getAllBooks() {
@@ -52,7 +52,7 @@ public class BookService {
 
         bookRepository.save(book);
         elasticSearchService.addBookToElasticsearch(book);
-        bookUpdateProducer.sendBookUpdate(UpdateType.NEW_BOOK, book);
+        updateProducer.sendBookUpdate(UpdateType.NEW_BOOK, book);
 
         return book;
     }

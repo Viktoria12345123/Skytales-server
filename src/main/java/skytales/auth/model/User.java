@@ -43,8 +43,7 @@ public class User {
     @Column(length = 500)
     private String description;
 
-    @OneToOne(mappedBy = "owner")
-    private Cart cart;
+    private UUID cartId;
 
     @OneToMany( mappedBy = "creator", fetch = FetchType.EAGER)
     private List<Book> books;

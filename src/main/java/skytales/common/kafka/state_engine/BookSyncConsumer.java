@@ -2,7 +2,8 @@ package skytales.common.kafka.state_engine;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import skytales.common.kafka.state_engine.model.Message;
+import skytales.common.kafka.state_engine.dto.BookMessage;
+import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
 
 @Service
@@ -16,9 +17,7 @@ public class BookSyncConsumer {
     }
 
     @KafkaListener(topics = "book-updates", groupId = "book-sync")
-    public void consumeBookUpdate(Message message) {
-
-        bookSyncWorker.processBookUpdate(message.getUpdateType(), message.getBook());
-        System.out.println("Ama kakvo stava tuka sega");
+    public void consumeBookUpdate(KafkaMessage<BookMessage> message) {
+        bookSyncWorker.processBookUpdate(message);
     }
 }

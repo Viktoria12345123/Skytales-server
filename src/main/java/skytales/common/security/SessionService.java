@@ -1,4 +1,4 @@
-package skytales.auth.service;
+package skytales.common.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;

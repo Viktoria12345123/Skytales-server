@@ -33,4 +33,8 @@ public class BookItemReference {
 
     @Column(nullable = false)
     private BigDecimal price;
+
+    @ManyToOne
+    @JoinColumn(name = "cart_id", referencedColumnName = "id")
+    private Cart cart;
 }

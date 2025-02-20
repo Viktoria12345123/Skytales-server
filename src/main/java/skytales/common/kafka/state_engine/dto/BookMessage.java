@@ -8,11 +8,9 @@ public record BookMessage(
         String title,
         String genre,
         String author,
-        String bannerImageUrl,
         String coverImageUrl,
-        Integer year,
+        int year,
         BigDecimal price,
-        String description,
         int quantity
 ) implements Serializable {
 }

@@ -1,16 +1,19 @@
 package skytales.cart.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record BookRequest(
         UUID id,
         String title,
-        String author,
         String genre,
+        String author,
         String coverImageUrl,
-        Integer year,
+        int year,
         BigDecimal price,
-        Integer quantity
+        int quantity
 ) {
 }
