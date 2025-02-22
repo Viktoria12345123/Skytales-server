@@ -28,11 +28,12 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(String userId, String role, String email) {
+    public String generateToken(String userId, String role, String email, String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
         claims.put("email", email);
+        claims.put("username", username);
         return generateToken(claims);
     }
 
@@ -101,8 +102,8 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(secretKey.getBytes()); // Use the key directly without Base64 decoding
     }
+
 
 }

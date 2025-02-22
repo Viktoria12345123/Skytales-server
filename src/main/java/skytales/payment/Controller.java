@@ -2,6 +2,7 @@ package skytales.payment;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import skytales.payment.dto.StockChange;
 import skytales.payment.model.BookState;
 import skytales.payment.service.PaymentService;
 

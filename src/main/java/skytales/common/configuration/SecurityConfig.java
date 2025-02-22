@@ -52,6 +52,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
+        config.addExposedHeader("ETag");
         source.registerCorsConfiguration("/**", config);
 
         return source;

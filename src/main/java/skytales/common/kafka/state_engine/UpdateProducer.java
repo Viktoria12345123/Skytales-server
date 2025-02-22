@@ -40,4 +40,9 @@ public class UpdateProducer {
         KafkaMessage<String> request = new KafkaMessage<>(id);
         kafkaTemplate.send("userCreated", request);
     }
+
+    public void clearCartForUser(String id) {
+        KafkaMessage<String> request = new KafkaMessage<>(id);
+        kafkaTemplate.send("cart-checkout", request);
+    }
 }

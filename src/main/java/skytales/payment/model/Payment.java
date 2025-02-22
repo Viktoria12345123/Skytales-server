@@ -1,9 +1,10 @@
 package skytales.payment.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import skytales.auth.model.User;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -20,14 +21,13 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @NotNull
+    private UUID user;
 
     @Column(nullable = false)
     private Double amount;
 
-    @Column(nullable = false)
+    @Column
     private String paymentIntentId;
 
     @Enumerated(EnumType.STRING)
@@ -36,9 +36,9 @@ public class Payment {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date createdAt = new Date();
+    private Date createdAt;
 
     @ElementCollection
     @Column(nullable = false)
-    private List<String> bookTitles;
+    private List<String> bookTitles = new ArrayList<>();
 }

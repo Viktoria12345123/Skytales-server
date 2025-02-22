@@ -4,10 +4,6 @@ package skytales.cart.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import skytales.auth.model.User;
-import skytales.library.model.Book;
-
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,19 +13,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "cart", indexes = { @Index(name = "idx_cart_owner", columnList = "owner") })
 public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "cart_books",
-            joinColumns = @JoinColumn(name = "cart_id", columnDefinition = "CHAR(36)"),
+            joinColumns = @JoinColumn(name = "cart_id", columnDefinition = "BINARY(16)"),
             inverseJoinColumns = @JoinColumn(name = "book_reference_id"))
     private Set<BookItemReference> books;
 
     @NotNull
+    @Column(columnDefinition = "BINARY(16)")
     private UUID owner;
 }

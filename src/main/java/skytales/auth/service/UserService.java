@@ -110,15 +110,9 @@ public class UserService {
         return jwtService.generateToken(
                 user.getId().toString(),
                 user.getRole().name(),
-                user.getEmail()
+                user.getEmail(),
+                user.getUsername()
         );
     }
 
-    public void setCartToUser(String cartId, String userId) {
-
-        User user = getById(UUID.fromString(userId));
-        user.setCartId(UUID.fromString(cartId));
-        userRepository.save(user);
-
-    }
 }

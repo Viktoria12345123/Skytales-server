@@ -9,7 +9,7 @@ import skytales.auth.dto.SessionResponse;
 public class SessionService {
     public SessionResponse getSessionData(HttpServletRequest request) {
 
-        String userId = (String) request.getAttribute("userId");
+         String userId = (String) request.getAttribute("userId");
         String username = (String) request.getAttribute("username");
         String email = (String) request.getAttribute("email");
         String role = (String) request.getAttribute("role");

@@ -28,7 +28,7 @@ public class QuestionController {
         this.sessionService = sessionService;
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}/questions")
     public ResponseEntity<List<Question>> getUserQuestions(@PathVariable UUID userId) {
         List<Question> questions = questionService.fetchQuestions(userId);
         return ResponseEntity.ok(questions);

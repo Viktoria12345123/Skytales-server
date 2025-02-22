@@ -2,13 +2,14 @@ package skytales.cart.service;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import skytales.cart.dto.SendCartRequest;
 import skytales.cart.model.BookItemReference;
 import skytales.cart.model.Cart;
 import skytales.cart.repository.BookItemReferenceRepository;
 import skytales.cart.repository.CartRepository;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -25,14 +26,33 @@ public class CartService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public Cart getCartById (UUID id) {
-        return  cartRepository.findById(id).orElse(null);
+    public Cart getCartByUserId(UUID id) {
+        return cartRepository.findCartByOwner(id)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
     }
 
-    public void addToCart (UUID bookId, UUID cartId) {
 
-       BookItemReference book = bookItemReferenceRepository.getReferenceById(bookId);
+    public BookItemReference getByBookId(UUID id) {
+        return bookItemReferenceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
 
+    }
+
+
+    public void addToCart(UUID userId, UUID bookId) {
+
+        List<Cart> all = cartRepository.findAll();
+
+        Cart cart = getCartByUserId(userId);
+
+        BookItemReference bookItemReference = bookItemReferenceRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        if(!cart.getBooks().contains(bookItemReference)) {
+            cart.getBooks().add(bookItemReference);
+            cartRepository.save(cart);
+        }
 
     }
 
@@ -43,8 +63,26 @@ public class CartService {
                 .build();
 
         cartRepository.save(cart);
-//
-//        KafkaMessage<String> request = new KafkaMessage<>(cart.getId().toString() + " " + userId);
-//        kafkaTemplate.send("cart_created", request);
+    }
+
+    public void deleteFromCart(UUID userId, UUID bookId) {
+        Cart cart = getCartByUserId(userId);
+        BookItemReference bookItemReference = getByBookId(bookId);
+
+        cart.getBooks().remove(bookItemReference);
+        cartRepository.save(cart);
+    }
+
+    public Set<BookItemReference> getCartItems(UUID userId) {
+        Cart cart = getCartByUserId(userId);
+        return cart.getBooks();
+    }
+
+    public void clearCart(UUID id) {
+        Cart cart = getCartByUserId(id);
+        cart.getBooks().clear();
+        cartRepository.save(cart);
+
+        System.out.println(cart.getBooks());
     }
 }

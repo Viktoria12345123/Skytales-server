@@ -1,4 +1,4 @@
-package skytales.payment;
+package skytales.payment.dto;
 
 import java.util.UUID;
 

@@ -9,12 +9,12 @@ import java.util.UUID;
 
 @Service
 @EnableKafka
-public class AuthConsumer {
+public class CartEventConsumer {
 
 
     private final CartService cartService;
 
-    public AuthConsumer(CartService cartService) {
+    public CartEventConsumer(CartService cartService) {
         this.cartService = cartService;
     }
 
@@ -23,5 +23,11 @@ public class AuthConsumer {
 
         UUID id = UUID.fromString(request.getData().toString());
         cartService.createCartForUser(id);
+    }
+
+    @KafkaListener(topics = "cart-checkout", groupId = "book-sync")
+    public void handleCartCheckout(KafkaMessage<?> request) {
+        UUID id = UUID.fromString(request.getData().toString());
+        cartService.clearCart(id);
     }
 }

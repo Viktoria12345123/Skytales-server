@@ -4,8 +4,11 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,6 +20,7 @@ import skytales.library.model.Book;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,15 +30,27 @@ public class BookController {
     private final BookService bookService;
     private final ElasticsearchClient elasticsearchClient;
 
-    public BookController(BookService bookService, @Qualifier("elasticsearchClient") ElasticsearchClient elasticsearchClient) {
+    public BookController(BookService bookService, ElasticsearchClient elasticsearchClient) {
         this.bookService = bookService;
         this.elasticsearchClient = elasticsearchClient;
     }
 
     @GetMapping()
-    public ResponseEntity<List<Book>> getBooks() {
+    public ResponseEntity<List<Book>> getBooks(@RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false) String ifNoneMatch, HttpServletResponse response) {
         List<Book> books = bookService.getAllBooks();
-        return new ResponseEntity<>(books, HttpStatus.OK);
+
+
+        String generatedETag = generateETagForBooks(books);
+
+        if (ifNoneMatch != null && ifNoneMatch.equals(generatedETag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+        }
+
+        response.setHeader(HttpHeaders.ETAG, generatedETag);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
+                .body(books);
     }
 
     @PostMapping("/create")
@@ -44,7 +60,9 @@ public class BookController {
         }
 
         Book book = bookService.createBook(data);
-        return new ResponseEntity<>(book, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .body(book);
     }
 
     @GetMapping("/search")
@@ -82,5 +100,12 @@ public class BookController {
 
         return new ResponseEntity<>(book, HttpStatus.OK);
     }
+
+    private String generateETagForBooks(List<Book> books) {
+        return Integer.toHexString(books.hashCode());
+    }
 }
+
+
+
 
