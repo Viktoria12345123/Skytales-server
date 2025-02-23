@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -37,4 +38,18 @@ public class BookItemReference {
     @ManyToOne
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
     private Cart cart;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BookItemReference that = (BookItemReference) o;
+        return Objects.equals(bookId, that.bookId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bookId);
+    }
 }

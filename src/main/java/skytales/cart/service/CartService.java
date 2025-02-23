@@ -1,16 +1,16 @@
 package skytales.cart.service;
 
-import org.springframework.kafka.core.KafkaTemplate;
+import io.lettuce.core.RedisException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import skytales.cart.model.BookItemReference;
 import skytales.cart.model.Cart;
+import skytales.cart.redis.RedisService;
 import skytales.cart.repository.BookItemReferenceRepository;
 import skytales.cart.repository.CartRepository;
-import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
+import java.util.*;
 
 @Service
 public class CartService {
@@ -18,18 +18,18 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final BookItemReferenceRepository bookItemReferenceRepository;
-    private final KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate;
+    private final RedisService redisService;
 
-    public CartService(CartRepository cartRepository, BookItemReferenceRepository bookItemReferenceRepository, KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate) {
+
+    public CartService(CartRepository cartRepository, BookItemReferenceRepository bookItemReferenceRepository, RedisService redisService) {
         this.cartRepository = cartRepository;
         this.bookItemReferenceRepository = bookItemReferenceRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.redisService = redisService;
     }
 
     public Cart getCartByUserId(UUID id) {
         return cartRepository.findCartByOwner(id)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
-
     }
 
 
@@ -40,42 +40,108 @@ public class CartService {
     }
 
 
-    public void addToCart(UUID userId, UUID bookId) {
-
-        List<Cart> all = cartRepository.findAll();
-
-        Cart cart = getCartByUserId(userId);
+    public void addToCart(UUID cartId, UUID bookId) {
 
         BookItemReference bookItemReference = bookItemReferenceRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        if(!cart.getBooks().contains(bookItemReference)) {
+        String cartKey = "cartId:" + cartId;
+        String versionKey = "cartVersion:" + cartId;
+
+        try {
+            Set<BookItemReference> cachedCart = redisService.get(cartKey);
+
+            if (cachedCart != null) {
+
+                cachedCart.add(bookItemReference);
+                redisService.set(cartKey, cachedCart);
+                redisService.incrBy(versionKey);
+
+            } else {
+                Cart cart = cartRepository.findById(cartId)
+                        .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+                cart.getBooks().add(bookItemReference);
+                cartRepository.save(cart);
+                redisService.incrBy(versionKey);
+
+                redisService.set(cartKey, cart.getBooks());
+            }
+
+        } catch (RedisConnectionFailureException e) {
+
+            Cart cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new RuntimeException("Cart not found"));
+
             cart.getBooks().add(bookItemReference);
             cartRepository.save(cart);
+
         }
-
     }
 
-    public void createCartForUser(UUID userId) {
 
-        Cart cart = Cart.builder()
-                .owner(userId)
-                .build();
+    public void deleteFromCart(UUID cartId, UUID bookId) {
 
-        cartRepository.save(cart);
-    }
-
-    public void deleteFromCart(UUID userId, UUID bookId) {
-        Cart cart = getCartByUserId(userId);
         BookItemReference bookItemReference = getByBookId(bookId);
 
-        cart.getBooks().remove(bookItemReference);
-        cartRepository.save(cart);
+        String cartKey = "cartId:" + cartId;
+        String versionKey = "cartVersion:" + cartId;
+
+        try {
+            Set<BookItemReference> cachedCart = redisService.get(cartKey);
+
+            if (cachedCart != null) {
+
+                cachedCart.remove(bookItemReference);
+                redisService.set(cartKey, cachedCart);
+                redisService.incrBy(versionKey);
+
+            } else {
+                Cart cart = cartRepository.findById(cartId)
+                        .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+                cart.getBooks().remove(bookItemReference);
+                cartRepository.save(cart);
+
+                redisService.set(cartKey, cart.getBooks());
+                redisService.incrBy(versionKey);
+
+            }
+        } catch (RedisConnectionFailureException e) {
+
+            Cart cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+            cart.getBooks().remove(bookItemReference);
+            cartRepository.save(cart);
+
+        }
     }
 
-    public Set<BookItemReference> getCartItems(UUID userId) {
-        Cart cart = getCartByUserId(userId);
-        return cart.getBooks();
+    public Set<BookItemReference> getCartItems(UUID cartId) {
+
+        String cartKey = "cartId:" + cartId;
+
+        try {
+            Set<BookItemReference> cachedCart = redisService.get(cartKey);
+
+            if (cachedCart != null) {
+                return cachedCart;
+            } else {
+                Cart cart = cartRepository.findById(cartId)
+                        .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+                redisService.set(cartKey, cart.getBooks());
+                return cart.getBooks();
+
+            }
+        } catch (RedisConnectionFailureException e) {
+
+            Cart cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+            return cart.getBooks();
+        }
     }
 
     public void clearCart(UUID id) {
@@ -85,4 +151,17 @@ public class CartService {
 
         System.out.println(cart.getBooks());
     }
+
+    public String createCartForUser(String userId) {
+        UUID identityForUser = UUID.fromString(userId);
+
+        Cart cart = Cart.builder()
+                .owner(identityForUser)
+                .build();
+
+        cartRepository.save(cart);
+        System.out.println("saved cart!");
+        return cart.getId().toString();
+    }
 }
+

@@ -35,14 +35,19 @@ public class UpdateProducer {
         kafkaTemplate.send("book-updates",  request);
     }
 
-    public void sendCreateCartRequest(String id) {
-
-        KafkaMessage<String> request = new KafkaMessage<>(id);
-        kafkaTemplate.send("userCreated", request);
-    }
-
     public void clearCartForUser(String id) {
         KafkaMessage<String> request = new KafkaMessage<>(id);
         kafkaTemplate.send("cart-checkout", request);
+    }
+
+
+    public void sendBatchSyncRequest() {
+        KafkaMessage<String> request = new KafkaMessage<>("");
+        kafkaTemplate.send("sync-db", request);
+    }
+
+    public void sendRedisSyncRequest() {
+        KafkaMessage<String> request = new KafkaMessage<>("");
+        kafkaTemplate.send("sync-redis-latestInf", request);
     }
 }

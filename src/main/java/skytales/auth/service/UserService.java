@@ -1,17 +1,20 @@
 package skytales.auth.service;
 
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import skytales.auth.dto.*;
-import skytales.auth.events.UserCreatedEvent;
 import skytales.auth.model.Role;
 import skytales.auth.model.User;
 import skytales.auth.repository.UserRepository;
 import skytales.common.kafka.state_engine.UpdateProducer;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -19,14 +22,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate;
-    private final UpdateProducer updateProducer;
+    private final RestTemplate restTemplate;
 
-    public UserService(UserRepository userRepository, JwtService jwtService, KafkaTemplate<String, KafkaMessage<String>> kafkaTemplate, UpdateProducer updateProducer) {
+    public UserService(UserRepository userRepository, JwtService jwtService, RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.updateProducer = updateProducer;
+        this.restTemplate = restTemplate;
     }
 
 
@@ -56,7 +57,9 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-        updateProducer.sendCreateCartRequest(user.getId().toString());
+
+        UUID cartId = createCartForUser(user.getId());
+        assignCart(cartId, user.getId());
 
         return user;
 
@@ -95,6 +98,7 @@ public class UserService {
 
     public RegisterResponse generateRegisterResponse(User user) {
 
+        System.out.println("Started token token");
         String jwtToken = createToken(user);
 
         return new RegisterResponse(
@@ -111,8 +115,28 @@ public class UserService {
                 user.getId().toString(),
                 user.getRole().name(),
                 user.getEmail(),
-                user.getUsername()
+                user.getUsername(),
+                String.valueOf(user.getCartId())
         );
     }
 
+    public void assignCart(UUID cartId, UUID userId) {
+        User user = getById(userId);
+        user.setCartId(cartId);
+        userRepository.save(user);
+    }
+
+    public UUID createCartForUser(UUID userId) {
+        String url = "http://localhost:8080/cart/createCart";
+
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("userId", userId.toString());
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(url, requestBody, Map.class);
+        String cartIdStr = (String) response.getBody().get("cartId");
+
+        UUID cartId = UUID.fromString(cartIdStr);
+
+        return cartId;
+    }
 }

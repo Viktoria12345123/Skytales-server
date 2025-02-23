@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        String token = extractJwtFromRequest(request);
+         String token = extractJwtFromRequest(request);
 
         if (token != null && jwtService.isTokenValid(token)) {
 
@@ -38,11 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtService.extractUsername(token);
             String role = jwtService.extractRole(token);
             String email = jwtService.extractEmail(token);
+            String cartId = jwtService.extractCartId(token);
 
             request.setAttribute("userId", userId);
             request.setAttribute("username", username);
             request.setAttribute("email", email);
             request.setAttribute("role", role);
+            request.setAttribute("cartId", cartId);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, null);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

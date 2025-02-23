@@ -13,11 +13,12 @@ public class SessionService {
         String username = (String) request.getAttribute("username");
         String email = (String) request.getAttribute("email");
         String role = (String) request.getAttribute("role");
+        String cartId = (String) request.getAttribute("cartId");
 
         if (userId == null || username == null || email == null || role == null) {
             throw new SessionAuthenticationException("Session data is incomplete.");
         }
 
-        return new SessionResponse(email, username, userId, role);
+        return new SessionResponse(email, username, userId, role, cartId);
     }
 }

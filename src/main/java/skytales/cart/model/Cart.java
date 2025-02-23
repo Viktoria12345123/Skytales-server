@@ -30,4 +30,5 @@ public class Cart {
     @NotNull
     @Column(columnDefinition = "BINARY(16)")
     private UUID owner;
+
 }

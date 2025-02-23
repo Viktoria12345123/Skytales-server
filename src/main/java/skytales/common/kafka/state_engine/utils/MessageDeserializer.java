@@ -57,8 +57,7 @@ public class MessageDeserializer implements Deserializer<KafkaMessage<?>> {
             return switch (type) {
                 case "book-new", "book-stock-update", "book-remove" -> BookRequest.class;
                 case "book-updates" -> BookMessage.class;
-                case "userCreated", "cartCreated", "cart-checkout" -> String.class;
-                default -> null;
+                default -> String.class;
             };
         }
     }
