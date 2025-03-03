@@ -13,6 +13,7 @@ import skytales.cart.redis.RedisService;
 import skytales.cart.repository.CartRepository;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class CartBatchSync {
     public void syncCartsBatch() {
 
         try {
-            Set<String> cartKeys = redisTemplate.keys("cart:*");
+             Set<String> cartKeys = redisTemplate.keys("shopping_cart:*");
 
             if (cartKeys != null) {
                 for (String cartKey : cartKeys) {
@@ -54,6 +55,7 @@ public class CartBatchSync {
                         if (cart != null && !cachedCart.equals(cart.getBooks())) {
                             cart.setBooks(cachedCart);
                             cartRepository.save(cart);
+                            redisService.reset(versionKey);
                         }
                     }
                 }

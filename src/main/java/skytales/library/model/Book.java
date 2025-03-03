@@ -3,10 +3,7 @@ package skytales.library.model;
 import jakarta.persistence.*;
 import lombok.*;
 import skytales.auth.model.User;
-import skytales.cart.model.Cart;
-
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Builder

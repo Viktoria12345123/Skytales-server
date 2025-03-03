@@ -1,14 +1,16 @@
 package skytales.cart.redis;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import skytales.common.kafka.state_engine.UpdateProducer;
 
+
+@EnableAsync
 @Getter
 @Component
 @EnableScheduling
@@ -25,22 +27,21 @@ public class RedisHealthChecker {
     }
 
     @Async
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 120000)
     public void checkRedisHealth() {
         try {
-            redisTemplate.getConnectionFactory().getConnection().ping();
             if (!redisAvailable) {
-                System.out.println("✅ Redis is online and ready.");
+                System.out.println("✅ Redis is synced and ready.");
                 redisAvailable = true;
+                return;
             }
-            System.out.println("✅ Sending event");
-            updateProducer.sendBatchSyncRequest();
+//            updateProducer.sendBatchSyncRequest();
         } catch (Exception e) {
             if (redisAvailable) {
-                System.out.println("❌ Redis is down. Retrying...");
+                System.out.println("❌ Redis is down.");
                 redisAvailable = false;
             }
-            System.out.println("❌ Redis is down. Retrying...");
+
         }
     }
 

@@ -3,10 +3,10 @@ package skytales.cart.events;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import skytales.cart.redis.sync.CacheStartupSync;
 import skytales.cart.redis.sync.CartBatchSync;
 import skytales.cart.service.CartService;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
-
 import java.util.UUID;
 
 @Service
@@ -16,10 +16,12 @@ public class CartEventConsumer {
 
     private final CartService cartService;
     private final CartBatchSync cartBatchSync;
+    private final CacheStartupSync cacheStartupSync;
 
-    public CartEventConsumer(CartService cartService, CartBatchSync cartBatchSync) {
+    public CartEventConsumer(CartService cartService, CartBatchSync cartBatchSync, CacheStartupSync cacheStartupSync) {
         this.cartService = cartService;
         this.cartBatchSync = cartBatchSync;
+        this.cacheStartupSync = cacheStartupSync;
     }
 
 
@@ -31,8 +33,15 @@ public class CartEventConsumer {
 
     @KafkaListener(topics = "sync-db", groupId = "book-sync")
     public void handleCartSync(KafkaMessage<?> request) {
-        System.out.println("Synchronisation process beginning...");
+
+        String cartIdString = String.valueOf(request);
+        String[] cartIds = cartIdString.split(",");
         cartBatchSync.syncCartsBatch();
     }
 
+
+    @KafkaListener(topics ="sync-redis-latestInf", groupId = "book-sync")
+    public void handleCacheSync(KafkaMessage<?> request) {
+        cacheStartupSync.syncCache();
+    }
 }

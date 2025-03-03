@@ -34,7 +34,7 @@ public class QuestionController {
         return ResponseEntity.ok(questions);
     }
 
-    @PostMapping("/postQuestion")
+    @PostMapping("/upload")
     public ResponseEntity<?> postQuestion(@RequestBody @Valid PostQuestionRequest postQuestionRequest,BindingResult bindingResult, HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {

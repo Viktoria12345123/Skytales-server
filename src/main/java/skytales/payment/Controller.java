@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/payments")
-public class Controller {
+public class
+
+Controller {
 
     private final PaymentService paymentService;
     private final BookState bookState;

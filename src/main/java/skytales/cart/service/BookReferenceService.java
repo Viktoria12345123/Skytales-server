@@ -17,14 +17,6 @@ public class BookReferenceService {
         this.bookItemReferenceRepository = bookItemReferenceRepository;
     }
 
-    public BookItemReference saveBookItem(BookItemReference bookItem) {
-        return bookItemReferenceRepository.save(bookItem);
-    }
-
-    public BookItemReference getBookItem(UUID bookId) {
-      return bookItemReferenceRepository.findById(bookId).orElse(null);
-    }
-
     public void addBookToState( BookRequest bookRequest) {
 
         BookItemReference book = BookItemReference.builder()

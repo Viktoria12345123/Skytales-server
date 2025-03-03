@@ -7,11 +7,11 @@ import skytales.cart.service.BookReferenceService;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
 @Service
-public class KafkaUpdate {
+public class ModelChangeConsumer {
 
     private final BookReferenceService bookReferenceService;
 
-    public KafkaUpdate(BookReferenceService bookReferenceService) {
+    public ModelChangeConsumer(BookReferenceService bookReferenceService) {
         this.bookReferenceService = bookReferenceService;
     }
 

@@ -23,13 +23,11 @@ public class AuthController {
 
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
     private final SessionService sessionService;
 
-    public AuthController(UserService userService, BCryptPasswordEncoder passwordEncoder, JwtService jwtService, SessionService sessionService) {
+    public AuthController(UserService userService, BCryptPasswordEncoder passwordEncoder, SessionService sessionService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
         this.sessionService = sessionService;
     }
 

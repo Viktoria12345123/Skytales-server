@@ -8,27 +8,6 @@ import skytales.common.kafka.state_engine.model.Message;
 
 public class MessageDeserializer implements Deserializer<KafkaMessage<?>> {
 
-//    private final ObjectMapper objectMapper = new ObjectMapper();
-//
-//    @Override
-//    public Message deserialize(String topic, byte[] data) {
-//        try {
-//            return objectMapper.readValue(data, Message.class);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to deserialize message", e);
-//        }
-//    }
-
-//    private final ObjectMapper objectMapper = new ObjectMapper();
-//
-//    @Override
-//    public KafkaMessage<?> deserialize(String topic, byte[] data) {
-//        try {
-//            return objectMapper.readValue(data, KafkaMessage.class);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to deserialize message", e);
-//        }
-
         private final ObjectMapper objectMapper = new ObjectMapper();
 
         @Override

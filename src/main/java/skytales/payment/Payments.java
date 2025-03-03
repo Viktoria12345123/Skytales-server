@@ -1,30 +1,27 @@
-package skytales.payment.controller;
+package skytales.payment;
 
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import skytales.auth.dto.SessionResponse;
 import skytales.common.kafka.state_engine.UpdateProducer;
 import skytales.common.security.SessionService;
 import skytales.payment.dto.PaymentRequest;
 import skytales.payment.exception.PaymentFailedException;
+import skytales.payment.model.Payment;
 import skytales.payment.model.PaymentStatus;
 import skytales.payment.service.PaymentService;
 import skytales.payment.service.StripeService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/payments")
 public class Payments {
 
 
@@ -72,5 +69,15 @@ public class Payments {
         updateProducer.clearCartForUser(String.valueOf(userId));
         paymentService.createPaymentRecord(userId, paymentRequest.amount(), paymentIntent.getId(), PaymentStatus.SUCCEEDED, paymentRequest.books());
         return ResponseEntity.ok().body(Map.of("success", true));
+    }
+
+
+    @GetMapping("/{userId}/history")
+    public ResponseEntity<?> history(@PathVariable String userId){
+
+        UUID owner = UUID.fromString(userId);
+        List<Payment> payments = paymentService.getAllByOwner(owner);
+
+        return ResponseEntity.status(HttpStatus.OK).body(payments);
     }
 }

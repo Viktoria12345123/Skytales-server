@@ -23,11 +23,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final RestTemplate restTemplate;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UserService(UserRepository userRepository, JwtService jwtService, RestTemplate restTemplate) {
+    public UserService(UserRepository userRepository, JwtService jwtService, RestTemplate restTemplate, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.restTemplate = restTemplate;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
 
@@ -72,13 +74,14 @@ public class UserService {
             throw new Error("wrong email");
         }
 
-        if (!user.getPassword().equals(loginRequest.password())) {
+        if (!bCryptPasswordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new Error("wrong password");
         }
 
+
+
         return user;
     }
-
 
     private String generateRandomUsername() {
         return "user_" + UUID.randomUUID().toString().substring(0, 8);
@@ -89,8 +92,8 @@ public class UserService {
         String jwtToken = createToken(user);
 
         return new LoginResponse(
-                user.getEmail(),
                 user.getId().toString(),
+                user.getUsername(),
                 user.getRole().name(),
                 jwtToken
         );

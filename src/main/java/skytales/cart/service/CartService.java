@@ -1,6 +1,5 @@
 package skytales.cart.service;
 
-import io.lettuce.core.RedisException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import skytales.cart.model.BookItemReference;
@@ -15,11 +14,9 @@ import java.util.*;
 @Service
 public class CartService {
 
-
     private final CartRepository cartRepository;
     private final BookItemReferenceRepository bookItemReferenceRepository;
     private final RedisService redisService;
-
 
     public CartService(CartRepository cartRepository, BookItemReferenceRepository bookItemReferenceRepository, RedisService redisService) {
         this.cartRepository = cartRepository;
@@ -32,20 +29,16 @@ public class CartService {
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
     }
 
-
     public BookItemReference getByBookId(UUID id) {
         return bookItemReferenceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
     }
 
-
     public void addToCart(UUID cartId, UUID bookId) {
 
-        BookItemReference bookItemReference = bookItemReferenceRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
-
-        String cartKey = "cartId:" + cartId;
+        BookItemReference bookItemReference = getByBookId(bookId);
+        String cartKey = "shopping_cart:" + cartId;
         String versionKey = "cartVersion:" + cartId;
 
         try {
@@ -79,12 +72,11 @@ public class CartService {
         }
     }
 
-
     public void deleteFromCart(UUID cartId, UUID bookId) {
 
         BookItemReference bookItemReference = getByBookId(bookId);
 
-        String cartKey = "cartId:" + cartId;
+        String cartKey = "shopping_cart:" + cartId;
         String versionKey = "cartVersion:" + cartId;
 
         try {
@@ -120,7 +112,7 @@ public class CartService {
 
     public Set<BookItemReference> getCartItems(UUID cartId) {
 
-        String cartKey = "cartId:" + cartId;
+        String cartKey = "shopping_cart:" + cartId;
 
         try {
             Set<BookItemReference> cachedCart = redisService.get(cartKey);
@@ -145,9 +137,17 @@ public class CartService {
     }
 
     public void clearCart(UUID id) {
+
         Cart cart = getCartByUserId(id);
         cart.getBooks().clear();
         cartRepository.save(cart);
+
+        try {
+            String cartKey = "shopping_cart:" + cart.getId() ;
+            redisService.delete(cartKey);
+        } catch (RedisConnectionFailureException _) {
+            System.out.println("Redis clearance miss.");
+        }
 
         System.out.println(cart.getBooks());
     }

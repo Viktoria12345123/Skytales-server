@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Setter
 @Service
 public class JwtService {
 
@@ -35,18 +38,11 @@ public class JwtService {
         claims.put("email", email);
         claims.put("username", username);
         claims.put("cartId", cartId);
-        return generateToken(claims);
+        return buildToken(claims, jwtExpiration);
     }
 
-    public String generateToken(Map<String, Object> extraClaim) {
-        return buildToken(extraClaim, jwtExpiration);
-    }
-
-    private String buildToken(
-            Map<String, Object> extraClaims,
-            long expiration
-    ) {
-        String token = Jwts
+    private String buildToken(Map<String, Object> extraClaims, long expiration) {
+        return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(extraClaims.get("email").toString())
@@ -54,11 +50,7 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
-
-        System.out.println("Generated JWT Token: " + token);
-        return token;
     }
-
 
     public boolean isTokenValid(String token) {
         try {
@@ -68,7 +60,7 @@ public class JwtService {
         }
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
@@ -107,7 +99,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes()); // Use the key directly without Base64 decoding
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
 

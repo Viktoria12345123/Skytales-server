@@ -24,7 +24,7 @@ public class QuestionService {
         return questionRepository.findByAuthorAndAnswerIsNotNull(userId);
     }
 
-    public Question createQuestion(PostQuestionRequest request, UUID userId) {
+    public void createQuestion(PostQuestionRequest request, UUID userId) {
 
         Question question = Question.builder()
                 .text(request.text())
@@ -32,7 +32,7 @@ public class QuestionService {
                 .status(Status.PENDING)
                 .build();
 
-        return questionRepository.save(question);
+        questionRepository.save(question);
     }
 
     public List<Question> getAll() {

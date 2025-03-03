@@ -62,4 +62,7 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
+    public List<Payment> getAllByOwner(UUID userId) {
+      return  paymentRepository.findByUser(userId);
+    }
 }

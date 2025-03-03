@@ -8,7 +8,6 @@ import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import skytales.payment.dto.PaymentRequest;
 import skytales.payment.exception.PaymentFailedException;
 import skytales.payment.model.BookState;
