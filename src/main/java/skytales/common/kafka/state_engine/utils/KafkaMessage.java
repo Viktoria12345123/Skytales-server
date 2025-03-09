@@ -1,6 +1,4 @@
 package skytales.common.kafka.state_engine.utils;
-
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

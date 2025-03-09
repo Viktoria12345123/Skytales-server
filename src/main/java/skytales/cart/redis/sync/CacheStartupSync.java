@@ -1,9 +1,7 @@
 package skytales.cart.redis.sync;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import skytales.cart.model.BookItemReference;
 import skytales.cart.model.Cart;
@@ -12,7 +10,6 @@ import skytales.cart.repository.CartRepository;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 @EnableKafka

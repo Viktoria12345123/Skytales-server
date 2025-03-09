@@ -2,7 +2,6 @@ package skytales.common.kafka.state_engine.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Serializer;
-import skytales.common.kafka.state_engine.model.Message;
 
 
 public class MessageSerializer implements Serializer<KafkaMessage<?>> {

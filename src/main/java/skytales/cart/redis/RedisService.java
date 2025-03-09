@@ -1,7 +1,5 @@
 package skytales.cart.redis;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,7 +21,7 @@ public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
     long TTL_SECONDS = 70;
 
-    private static final String CARTS_ZSET_KEY = "cart_terms";
+    static final String CARTS_ZSET_KEY = "cart_terms";
 
     public RedisService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -41,7 +39,6 @@ public class RedisService {
     }
 
     public void set(String key, Set<BookItemReference> value) {
-//        checkAndCleanMemory();
         redisTemplate.opsForValue().set(key, value);
         redisTemplate.expire(key, TTL_SECONDS, TimeUnit.SECONDS);
     }

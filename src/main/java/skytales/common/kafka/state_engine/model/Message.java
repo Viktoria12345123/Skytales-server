@@ -13,10 +13,6 @@ public class Message {
     private UpdateType updateType;
     private BookMessage book;
 
-
-    public Message() {
-    }
-
     @JsonCreator
     public Message(
             @JsonProperty("updateType") UpdateType updateType,

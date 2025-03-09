@@ -1,6 +1,8 @@
 package skytales.common.kafka.state_engine;
+
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
+
 import org.springframework.stereotype.Service;
 import skytales.common.kafka.state_engine.dto.BookMessage;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;

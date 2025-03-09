@@ -2,6 +2,7 @@ package skytales.common.kafka.state_engine;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
 import skytales.common.kafka.state_engine.dto.BookMessage;
 import skytales.common.kafka.state_engine.model.UpdateType;
 import skytales.common.kafka.state_engine.utils.KafkaMessage;
@@ -17,7 +18,12 @@ public class BookSyncWorker {
 
     public void processBookUpdate(KafkaMessage<BookMessage> request) {
 
-        UpdateType type = UpdateType.valueOf(request.getType());
+        UpdateType type;
+        try {
+            type = UpdateType.valueOf(request.getType());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown update type");
+        }
 
         switch (type) {
             case NEW_BOOK:

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import skytales.cart.dto.BookRequest;
 import skytales.cart.model.BookItemReference;
 import skytales.cart.repository.BookItemReferenceRepository;
+import skytales.common.kafka.state_engine.dto.BookMessage;
 
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public class BookReferenceService {
         this.bookItemReferenceRepository = bookItemReferenceRepository;
     }
 
-    public void addBookToState( BookRequest bookRequest) {
+    public void addBookToState( BookMessage bookRequest) {
 
         BookItemReference book = BookItemReference.builder()
                 .author(bookRequest.author())
@@ -44,7 +45,7 @@ public class BookReferenceService {
 
     }
 
-    public void updateBookStock(BookRequest bookRequest) {
+    public void updateBookStock(BookMessage bookRequest) {
 
     }
 }

@@ -2,7 +2,6 @@ package skytales.auth.service;
 
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -10,12 +9,12 @@ import skytales.auth.dto.*;
 import skytales.auth.model.Role;
 import skytales.auth.model.User;
 import skytales.auth.repository.UserRepository;
-import skytales.common.kafka.state_engine.UpdateProducer;
-import skytales.common.kafka.state_engine.utils.KafkaMessage;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -32,6 +31,16 @@ public class UserService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
+    public List<UserListItem> listUsers() {
+        List<User> users = userRepository.findAll();
+        return convertUsersToUserListRequest(users);
+    }
+
+    public List<UserListItem> convertUsersToUserListRequest(List<User> users) {
+        return users.stream()
+                .map(user -> new UserListItem(user.getUsername(), user.getEmail(), user.getRole().toString()))
+                .collect(Collectors.toList());
+    }
 
     public User getById(UUID id) {
         return userRepository.findById(id).orElse(null);
@@ -44,6 +53,7 @@ public class UserService {
     public User register(RegisterRequest registerRequest, BCryptPasswordEncoder bCryptPasswordEncoder) {
 
         User exists = isEmailTaken(registerRequest.email());
+
         if (exists != null) {
             throw new Error("user already exists!");
         }
@@ -77,9 +87,6 @@ public class UserService {
         if (!bCryptPasswordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new Error("wrong password");
         }
-
-
-
         return user;
     }
 
